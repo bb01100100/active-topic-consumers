@@ -47,3 +47,44 @@ Writing Topic->Groups mapping to output-topics.json file.
 Writing Group->Topics mapping to output-groups.json file.
 
 ```
+
+Example JSON output for topic-to-group mappings:
+
+```
+{
+  "source-topic": [
+    "groupA",
+    "groupC"
+  ],
+  "topic-b": [
+    "groupB",
+    "groupC"
+  ],
+  "topic-c": [
+    "groupB",
+    "group2"
+  ],
+  "error-a": [
+    "groupC"
+  ]
+}
+```
+
+Example JSON output for group-to-topic mappings:
+
+```
+{
+  "groupA": [
+    "source-topic"
+  ],
+  "groupB": [
+    "topic-b",
+    "topic-c"
+  ],
+  "groupC": [
+    "error-a",
+    "topic-b",
+    "source-topic"
+  ]
+}
+```
