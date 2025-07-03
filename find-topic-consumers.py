@@ -19,7 +19,7 @@ class SetEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
 
-def list_consumer_groups_and_topics(conf, output_file='/dev/stdout'):
+def list_consumer_groups_and_topics(conf, group, output_file='/dev/stdout'):
    """
    Iterates over all consumer groups and lists the topics 
    being consumed by each group.
@@ -32,6 +32,9 @@ def list_consumer_groups_and_topics(conf, output_file='/dev/stdout'):
       'sasl.password': dpath.get(conf,'confluent/cluster/api_secret')
    }
    admin_client = None # Initialize to None for the finally block
+
+   topic_to_group = {}
+   group_to_topic = {}
 
    try:
       admin_client = AdminClient(admin_client_conf)
@@ -47,6 +50,13 @@ def list_consumer_groups_and_topics(conf, output_file='/dev/stdout'):
 
       consumer_group_ids = [group.group_id for group in list_groups_result.valid]
 
+      if group is not None:
+         if group in consumer_group_ids:
+            consumer_group_ids = [ group ]
+         else:
+            consumer_group_ids = []
+         
+
       if not consumer_group_ids:
          print("No consumer groups found.")
          return
@@ -57,8 +67,6 @@ def list_consumer_groups_and_topics(conf, output_file='/dev/stdout'):
       print("\nDescribing consumer groups and their topic assignments:")
       describe_groups_futures = admin_client.describe_consumer_groups(consumer_group_ids)
 
-      topic_to_group = {}
-      group_to_topic = {}
 
       for group_id, future in describe_groups_futures.items():
          try:
@@ -102,23 +110,29 @@ def list_consumer_groups_and_topics(conf, output_file='/dev/stdout'):
       print(f"An unexpected error occurred: {e}")
    finally:
       
-      topics_file = "{}-topics.json".format(Path(output_file).stem)
-      groups_file = "{}-groups.json".format(Path(output_file).stem)
+      topics_file = "{}-topics{}".format(Path(output_file).stem, Path(output_file).suffix)
+      groups_file = "{}-groups{}".format(Path(output_file).stem, Path(output_file).suffix)
 
-      print("Topics file is {}".format(topics_file))
       
-      print("Writing Topic->Groups mapping to {} file:".format(topics_file))
-      with open(topics_file,'w') as f:
-         json.dump(topic_to_group, f, cls=SetEncoder)
+      if len(topic_to_group) > 0:
+         print("Writing Topic->Groups mapping to {} file.".format(topics_file))
+         with open(topics_file,'w') as f:
+            json.dump(topic_to_group, f, cls=SetEncoder)
 
-      print("Writing Group->Topics mapping to {} file:".format(groups_file))
-      with open(groups_file,'w') as f:
-         json.dump(group_to_topic, f, cls=SetEncoder)
+      if len(group_to_topic) > 0:
+         print("Writing Group->Topics mapping to {} file.".format(groups_file))
+         with open(groups_file,'w') as f:
+            json.dump(group_to_topic, f, cls=SetEncoder)
 
 
 
 def main():
    parser = argparse.ArgumentParser()
+
+   parser.add_argument('--group', '-g',
+      type=str,
+      nargs='?',
+      help='Consumer group to query (default is all groups)')
 
    # I want my own optional/required group ordering
    req = parser.add_argument_group('required arguments')
@@ -146,6 +160,7 @@ def main():
       config_file = yaml_loader.load_config(args.config_file)
       list_consumer_groups_and_topics(
          conf=config_file,
+         group=args.group,
          output_file=args.output_file)
 
 
