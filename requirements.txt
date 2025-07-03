@@ -1,0 +1,9 @@
+# Used for reading config files
+pyyaml
+
+# Used for traversing nested dicts.
+dpath
+
+# admin api acccess
+confluent_kafka
+
