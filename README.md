@@ -6,11 +6,18 @@ Identify which Kafka topics are actively being consumed by which consmer groups.
 2. Writes a json group -> topic mapping file so you can see which groups are consuming from a given topic
 3. Writes a json topic -> group mapping file so you can see which topics a given group is consuming from.
 
+
+By default all consumer groups are queried, but output can be constrained to a single
+consumer group via the `-g` or `--group` argument.
+
+
 ```
-usage: find-topic-consumers.py [-h] --config_file CONFIG_FILE --output_file OUTPUT_FILE
+usage: find-topic-consumers.py [-h] [--group [GROUP]] --config_file CONFIG_FILE --output_file OUTPUT_FILE
 
 optional arguments:
   -h, --help            show this help message and exit
+  --group [GROUP], -g [GROUP]
+                        Consumer group to query (default is all groups)
 
 required arguments:
   --config_file CONFIG_FILE, -f CONFIG_FILE
@@ -43,7 +50,7 @@ The configuration file is a YAML file, with the following structure:
 
 ```
 ---
-# Values with a ${NAME_LIKE_THIS} are expected to be replace with environment
+# Values with a ${NAME_LIKE_THIS} are expected to be replaced with environment
 # variable values.
 confluent:
    cluster:
