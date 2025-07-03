@@ -19,7 +19,44 @@ required arguments:
                         File to write group/topic info to (default is stdout)
 ```
 
-Example output:
+## Setup
+
+Using python3, create a virtual environment:
+`python3 -mvenv venv`
+
+Activate the venv:
+`source venv/bin/acticate`
+
+Install dependencies via pip:
+`pip install -r requirements.txt`
+
+Set environment variables for the Kafka Cluster API key and secret (these will be injected into the script at runtime):
+
+```
+export CONFLUENT_CLUSTER_API_KEY=key12345
+export CONFLUENT_CLUSTER_API_SECRET=secret98765
+```
+
+These environment variable names (must) match the fields in the `sample-groups.conf` configuration file.
+
+The configuration file is a YAML file, with the following structure:
+
+```
+---
+# Values with a ${NAME_LIKE_THIS} are expected to be replace with environment
+# variable values.
+confluent:
+   cluster:
+      bootstrap_endpoint: my-cluster.ap-southeast-2.aws.confluent.cloud:9092
+      cluster_id: lkc-123xyz
+      api_key: ${CONFLUENT_CLUSTER_API_KEY}
+      api_secret: ${CONFLUENT_CLUSTER_API_SECRET}
+```
+
+This ensures no secrets are present in the file and don't get commited into source control, etc.
+
+
+## Example output
 
 ```
 Found 4 consumer groups.
